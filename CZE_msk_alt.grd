@@ -1,0 +1,27 @@
+[general] 
+creator=R package 'raster' 
+created= 2011-11-12 14:47:56 
+[georeference] 
+nrows= 336 
+ncols= 840 
+xmin= 12 
+ymin= 48.4 
+xmax= 19 
+ymax= 51.2 
+projection= +proj=longlat +ellps=WGS84 
+[data] 
+datatype= INT2S 
+byteorder= little 
+nbands= 1 
+bandorder= BIL 
+categorical= FALSE 
+minvalue= 66 
+maxvalue= 1494 
+nodatavalue= -9999 
+[legend] 
+legendtype=  
+values=  
+color=  
+[description] 
+layername= CZE_msk_alt 
+history=  
