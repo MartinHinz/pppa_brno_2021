@@ -56,6 +56,8 @@ cat(rmarkdown::metadata$date)
 .right[
 .tiny[
 You can find the code and data of this presentation at [https://github.com/MartinHinz/pppa_brno_2021](https://github.com/MartinHinz/pppa_brno_2021).
+
+For this presentation, intensive use was made of the online book "Intro to GIS and Spatial Analysis". The book can be found at the following address and contains other exciting things: [https://mgimond.github.io/Spatial](https://mgimond.github.io/Spatial)
 ]
 ]
 ]
