@@ -94,7 +94,7 @@ You are responsible.
 You will see how data needs to be structured to be able to read it into R.
 
 ### Using the right tools in the right way
-I will demonstrate some tools and their application in special statistics.
+I will demonstrate some tools and their application in spatial statistics.
 
 ### Making the right interpretations and conclusions
 You are responsible (again).
