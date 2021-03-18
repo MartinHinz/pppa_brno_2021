@@ -71,8 +71,57 @@ I will demonstrate some tools and their application in special statistics.
 You are responsible (again).
 
 ---
+## Install some packages
+
+You need:
+
+
+```r
+list.of.packages &lt;- c("sf", # Handling spatial data
+                      "raster", # Handling raster data
+                      "maptools", # additional spatial functionality
+                      "spatstat", # spatial statistic 
+                      "ggplot2", # general plotting library
+                      "rnaturalearth" # Getting some Geodata
+)
+
+new.packages &lt;- list.of.packages[
+  !(list.of.packages %in% installed.packages()[,"Package"])
+  ]
+
+if(length(new.packages)) install.packages(new.packages)
+```
+
+Optional:
+
+
+```r
+# package for centrographic statistics
+# We only might need it once
+if (!require("aspace")) install.packages("aspace")
+```
+
+
+---
 class: inverse, bottom, right
 # Data Preparation and Import
+
+---
+
+## Get some data
+
+* [location of 14C dated sites in Czech Republic](data/c14sites.csv)
+* [location of 14C dated sites in Czech Republic in a different format](data/c14sites_comma.csv)
+
+Save them to a folder of your choice
+
+### Set your working directory
+
+The easiest at the moment in R at Menu &gt; Session &gt; Set Working Directory &gt; Choose Directory
+
+(there are other ways...)
+
+Point to the same folder where you saved the files
 
 ---
 
@@ -124,91 +173,86 @@ data
 ```
 
 ```
-##                          site     lat     lng
-## 1                     Hlinsko 49.7629 15.9095
-## 2                  Kutná Hora 49.9474 15.2674
-## 3   Mnichovo Hradiště, Dneboh 50.5307 15.0335
-## 4      Mohelnice, U cukrovaru 49.7833 16.9167
-## 5                     Olomouc 49.5767 17.2311
-## 6                   Vedrovice 49.0217 16.3808
-## 7               Velké Hoštice 49.9300 17.9600
-## 8              Blucina Cezavy 49.0400 16.6200
-## 9                      Bylany 49.6667 15.2500
-## 10                     Bezděz 50.5342 14.7200
-## 11                   Chudeřín 50.3372 13.4470
-## 12            Mušov Neurissen 48.9100 16.5640
-## 13           Mušov Königsgrab 48.9000 16.5611
-## 14               Okrouhlík I. 50.8420 14.3550
-## 15           Uhelná rokle II. 50.6053 14.6846
-## 16        Orlík-Krkavčí skála 49.5108 14.1653
-## 17           Pod Černou Louží 49.5100 15.5130
-## 18             Radovesice III 50.4110 14.0683
-## 19                    Ďáblice 50.1423 14.4767
-## 20              Jenišův Újezd 50.5667 13.7167
-## 21             Jezevčí převis 50.7818 14.2145
-## 22       Kostelec nad Vltavou 49.5012 14.2109
-## 23                     Měšice 50.1969 14.5194
-## 24              Okrouhlík II. 50.8420 14.3550
-## 25  Radkovice-Osobovská skála 49.4796 13.4580
-## 26   Sutny, Těšetice-Kyjovice 48.8960 16.1360
-## 27                  Prasklice 49.2688 17.1858
-## 28               Slanska Hora 50.2340 14.1000
-## 29                    Blučina 49.0550 16.6465
-## 30   Miškovice; site: Praha 9 50.1579 14.5454
-## 31                  Dluhonice 49.4544 17.4128
-## 32                Postoloprty 50.3598 13.7029
-## 33                      Becov 50.4339 13.7233
-## 34         Zadní Hon, Březník 49.1716 16.1945
-## 35              Brno - Bystrc 49.2266 16.5311
-## 36                 Brno-Lisen 49.2082 16.6947
-## 37        Brodek u Prostějova 49.3701 17.0907
-## 38                  Vikletice 50.3500 13.4025
-## 39                   Dobešice 49.3268 14.2602
-## 40                    Homolka 49.0308 14.9891
-## 41                   Denemark 49.9277 15.2528
-## 42                   Lovosice 50.5146 14.0515
-## 43                  Makotřasy 50.1445 14.2147
-## 44                Máselník I. 50.6866 14.5370
-## 45                  Mohelnice 49.7833 16.9167
-## 46                Nový Bydžov 50.2415 15.4908
-## 47 Olomouc-Savonín, Horní lán 49.5767 17.2311
-## 48                   Nemilany 49.5585 17.2463
-## 49                     Řepčín 49.6079 17.2343
-## 50                   Slavonin 49.5700 17.2300
-## 51                     Pavlov 48.8742 16.6723
-## 52          Pavlov-Horní Pole 48.8745 16.6711
-## 53                Pod křídlem 50.6670 14.5328
-## 54                      Slany 50.2269 14.0837
-## 55   Vlkov u Spáleného-Babiny 49.6029 13.5771
-## 56                  Spytihněv 49.1405 17.4982
-## 57                   Tušimice 50.3833 13.3667
-## 58                  Tvořihráz 48.9172 16.1360
-## 59                       Žopy 49.3326 17.6094
-## 60                   Heřmánky 49.7069 17.7678
-## 61       Otmíče-Otmíčská hora 49.8633 13.9480
-## 62                Šídelník I. 50.5700 14.5200
-## 63                     Toušeň 50.1695 14.7158
-## 64       Mířkov-Racovský vrch 49.5898 12.8798
-## 65                Vysoká Lípa 50.8560 14.3480
-## 66               Šídelník III 50.5700 14.5200
-## 67    Starý zámek, Suchohrdly 48.8683 16.0948
-## 68              Na Kocourkách 49.0287 16.4376
-## 69                 Slavonín 1 49.5691 17.2348
-## 70                 Přáslavice 49.5847 17.3914
-## 71           Brno - Ivanovice 49.2641 16.5657
-## 72                Černá Louže 50.8556 14.3503
-## 73                Chabařovice 50.6732 13.9418
-## 74                   Holubice 49.1775 16.8121
-## 75                      Hulín 49.3171 17.4639
-## 76                  Budkovice 49.0725 16.3462
-## 77                   Těšetice 48.8890 16.1581
-## 78               Dneboh-Hrada 50.5307 15.0335
-## 79                      Mokrá 49.2233 16.7516
-## 80               Prag 6, Baba 50.0500 14.4167
-## 81                     Donbas 49.4180 17.3108
-## 82          Šebkovice, Třebíč 49.1206 15.8198
-## 83            Široké Třebčice 50.2807 13.3835
-## 84                     Zalany 50.5833 13.9000
+##                         site     lat     lng
+## 1                    Hlinsko 49.7629 15.9095
+## 2                 Kutná Hora 49.9474 15.2674
+## 3  Mnichovo Hradiště, Dneboh 50.5307 15.0335
+## 4     Mohelnice, U cukrovaru 49.7833 16.9167
+## 5                    Olomouc 49.5767 17.2311
+## 6                  Vedrovice 49.0217 16.3808
+## 7              Velké Hoštice 49.9300 17.9600
+## 8             Blucina Cezavy 49.0400 16.6200
+## 9                     Bylany 49.6667 15.2500
+## 10                    Bezděz 50.5342 14.7200
+## 11                  Chudeřín 50.3372 13.4470
+## 12           Mušov Neurissen 48.9100 16.5640
+## 13          Mušov Königsgrab 48.9000 16.5611
+## 14              Okrouhlík I. 50.8420 14.3550
+## 15          Uhelná rokle II. 50.6053 14.6846
+## 16       Orlík-Krkavčí skála 49.5108 14.1653
+## 17          Pod Černou Louží 49.5100 15.5130
+## 18            Radovesice III 50.4110 14.0683
+## 19                   Ďáblice 50.1423 14.4767
+## 20             Jenišův Újezd 50.5667 13.7167
+## 21            Jezevčí převis 50.7818 14.2145
+## 22      Kostelec nad Vltavou 49.5012 14.2109
+## 23                    Měšice 50.1969 14.5194
+## 24 Radkovice-Osobovská skála 49.4796 13.4580
+## 25  Sutny, Těšetice-Kyjovice 48.8960 16.1360
+## 26                 Prasklice 49.2688 17.1858
+## 27              Slanska Hora 50.2340 14.1000
+## 28                   Blučina 49.0550 16.6465
+## 29  Miškovice; site: Praha 9 50.1579 14.5454
+## 30                 Dluhonice 49.4544 17.4128
+## 31               Postoloprty 50.3598 13.7029
+## 32                     Becov 50.4339 13.7233
+## 33        Zadní Hon, Březník 49.1716 16.1945
+## 34             Brno - Bystrc 49.2266 16.5311
+## 35                Brno-Lisen 49.2082 16.6947
+## 36       Brodek u Prostějova 49.3701 17.0907
+## 37                 Vikletice 50.3500 13.4025
+## 38                  Dobešice 49.3268 14.2602
+## 39                   Homolka 49.0308 14.9891
+## 40                  Denemark 49.9277 15.2528
+## 41                  Lovosice 50.5146 14.0515
+## 42                 Makotřasy 50.1445 14.2147
+## 43               Máselník I. 50.6866 14.5370
+## 44               Nový Bydžov 50.2415 15.4908
+## 45                  Nemilany 49.5585 17.2463
+## 46                    Řepčín 49.6079 17.2343
+## 47                  Slavonin 49.5700 17.2300
+## 48                    Pavlov 48.8742 16.6723
+## 49         Pavlov-Horní Pole 48.8745 16.6711
+## 50               Pod křídlem 50.6670 14.5328
+## 51                     Slany 50.2269 14.0837
+## 52  Vlkov u Spáleného-Babiny 49.6029 13.5771
+## 53                 Spytihněv 49.1405 17.4982
+## 54                  Tušimice 50.3833 13.3667
+## 55                 Tvořihráz 48.9172 16.1360
+## 56                      Žopy 49.3326 17.6094
+## 57                  Heřmánky 49.7069 17.7678
+## 58      Otmíče-Otmíčská hora 49.8633 13.9480
+## 59               Šídelník I. 50.5700 14.5200
+## 60                    Toušeň 50.1695 14.7158
+## 61      Mířkov-Racovský vrch 49.5898 12.8798
+## 62               Vysoká Lípa 50.8560 14.3480
+## 63   Starý zámek, Suchohrdly 48.8683 16.0948
+## 64             Na Kocourkách 49.0287 16.4376
+## 65                Slavonín 1 49.5691 17.2348
+## 66                Přáslavice 49.5847 17.3914
+## 67          Brno - Ivanovice 49.2641 16.5657
+## 68               Černá Louže 50.8556 14.3503
+## 69               Chabařovice 50.6732 13.9418
+## 70                  Holubice 49.1775 16.8121
+## 71                     Hulín 49.3171 17.4639
+## 72                 Budkovice 49.0725 16.3462
+## 73                  Těšetice 48.8890 16.1581
+## 74                     Mokrá 49.2233 16.7516
+## 75              Prag 6, Baba 50.0500 14.4167
+## 76                    Donbas 49.4180 17.3108
+## 77         Šebkovice, Třebíč 49.1206 15.8198
+## 78           Široké Třebčice 50.2807 13.3835
+## 79                    Zalany 50.5833 13.9000
 ```
 
 ---
@@ -239,7 +283,7 @@ data.sf
 ```
 
 ```
-## Simple feature collection with 84 features and 1 field
+## Simple feature collection with 79 features and 1 field
 ## geometry type:  POINT
 ## dimension:      XY
 ## bbox:           xmin: 12.8798 ymin: 48.8683 xmax: 17.96 ymax: 50.856
@@ -269,10 +313,10 @@ Just use plot
 
 
 ```r
-plot(data.sf)
+plot(data.sf) # inbuild plots
 ```
 
-![](index_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -283,16 +327,17 @@ using the gglot and natural earth data
 .tiny[
 
 ```r
-library(ggplot2)
-library(rnaturalearth)
+library(ggplot2) # for nicer plots
+library(rnaturalearth) # for geodata
 
-worldmap &lt;- ne_countries(scale = 'medium', type = 'map_units',
+worldmap &lt;- ne_countries(scale = 'medium',
+                         type = 'map_units',
                          returnclass = 'sf')
 ggplot() + geom_sf(data = worldmap) + geom_sf(data=data.sf) +
     coord_sf(xlim = c(0,40), ylim = c(45,55)) + theme_bw()
 ```
 
-![](index_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
 ]]
 
 
@@ -310,7 +355,7 @@ ggplot() + geom_sf(data = worldmap) + geom_sf(data=data.sf) +
 plot(data.sf, graticule = TRUE)
 ```
 
-![](index_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -321,7 +366,7 @@ data.utm &lt;- st_transform(data.sf,
 plot(data.utm, graticule = TRUE)
 ```
 
-![](index_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-14-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -390,158 +435,31 @@ dy &lt;- sqrt(
 
 ## Plot Center, standard distance and standard deviational ellipse
 .pull-left[
-![](images/centrography.svg)
-.caption[source: https://mgimond.github.io]
+![](index_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
 ]
 
 .pull-left[
 .tiny[
 
 ```r
+# you do not have to run this: installing and loading
+# aspace requires a lot of dependencies!
 library(aspace)
-```
 
-```
-## Loading required package: splancs
-```
+# calculating the ellipse
+ellipse &lt;- st_as_sf(
+  calc_sde(points = st_coordinates(data.utm)),
+  coords = c(2,3), 
+  crs = 32633)
 
-```
-## Loading required package: sp
-```
-
-```
-## 
-## Spatial Point Pattern Analysis Code in S-Plus
-##  
-##  Version 2 - Spatial and Space-Time analysis
-```
-
-```
-## Loading required package: Hmisc
-```
-
-```
-## Loading required package: lattice
-```
-
-```
-## Loading required package: survival
-```
-
-```
-## Loading required package: Formula
-```
-
-```
-## 
-## Attaching package: 'Hmisc'
-```
-
-```
-## The following object is masked from 'package:splancs':
-## 
-##     zoom
-```
-
-```
-## The following objects are masked from 'package:base':
-## 
-##     format.pval, units
-```
-
-```
-## Loading required package: shapefiles
-```
-
-```
-## Loading required package: foreign
-```
-
-```
-## 
-## Attaching package: 'shapefiles'
-```
-
-```
-## The following objects are masked from 'package:foreign':
-## 
-##     read.dbf, write.dbf
-```
-
-```r
-ellipse &lt;- st_as_sf(calc_sde(points = st_coordinates(data.utm)),
-                    coords = c(2,3), 
-                    crs = 32633)
-```
-
-```
-## $id
-## [1] 1
-## 
-## $CALCCENTRE
-## [1] TRUE
-## 
-## $weighted
-## [1] FALSE
-## 
-## $CENTRE.x
-## [1] 534995.9
-## 
-## $CENTRE.y
-## [1] 5516291
-## 
-## $Sigma.x
-## [1] 66299.67
-## 
-## $Sigma.y
-## [1] 160162.8
-## 
-## $Major
-## [1] "SigmaY"
-## 
-## $Minor
-## [1] "SigmaX"
-## 
-## $Theta
-## [1] 119.151
-## 
-## $Eccentricity
-## [1] 0.9102988
-## 
-## $Area.sde
-## [1] 33359757635
-## 
-## $TanTheta
-## [1] -1.792892
-## 
-## $SinTheta
-## [1] 0.8733394
-## 
-## $CosTheta
-## [1] -0.4871122
-## 
-## $SinThetaCosTheta
-## [1] -0.4254143
-## 
-## $Sin2Theta
-## [1] 0.7627217
-## 
-## $Cos2Theta
-## [1] 0.2372783
-## 
-## $ThetaCorr
-## [1] 119.151
-```
-
-```r
-ggplot() + geom_sf(data = worldmap) + geom_sf(data=data.utm) +
+# Ploting everything
+ggplot() + geom_sf(data=worldmap) + geom_sf(data=data.utm) +
   geom_sf(data=mean_center.utm, color="red") +
-  geom_sf(data=st_buffer(mean_center.utm, standard_distance), fill="red", alpha = 0.5) +
+  geom_sf(data=st_buffer(mean_center.utm, standard_distance),
+          fill="red", alpha = 0.5) +
   geom_sf(data=ellipse, fill="yellow", alpha = 0.5) +
     coord_sf(xlim = c(10,20), ylim = c(48,52)) + theme_bw() 
 ```
-
-![](index_files/figure-html/unnamed-chunk-15-1.png)&lt;!-- --&gt;
 ]
 ]
 ---
@@ -560,97 +478,92 @@ $$
 
 
 ```r
-cz.lnglat &lt;- ne_countries(country = 'Czech Republic', returnclass = "sf", scale = "medium")
+# get the geodata of Czech Republic
+cz.lnglat &lt;- ne_countries(country = 'Czech Republic',
+                          returnclass = "sf", scale = "medium")
+
+# transform from Lat/Lng WGS84 to UTM
 cz &lt;- st_transform(cz.lnglat, crs = 32633)
+
+# calculate the area
 cz.area &lt;- st_area(cz)
+
+# applying the formula
 nrow(data.utm)/cz.area
 ```
 
 ```
-## 1.067256e-09 [1/m^2]
+## 1.003729e-09 [1/m^2]
 ```
 
 ---
 ## Local density
 
 The same, but measured at different locations, not only once for all. Which location depends on the approach.
-### Quadrat density
 
-Divide the area into squares and calculate the density by square.
+.pull-left[
+### Preparations
+
+At first we have to make our dataset available for spatstat. For this, we have to transform it into a point pattern data.
 
 
 ```r
 library(spatstat)
-```
 
-```
-## Loading required package: spatstat.data
-```
-
-```
-## Loading required package: nlme
-```
-
-```
-## Loading required package: rpart
-```
-
-```
-## 
-## spatstat 1.64-1       (nickname: 'Help you I can, yes!') 
-## For an introduction to spatstat, type 'beginner'
-```
-
-```
-## 
-## Note: spatstat version 1.64-1 is out of date by more than 10 months; we recommend upgrading to the latest version.
-```
-
-```
-## 
-## Attaching package: 'spatstat'
-```
-
-```
-## The following object is masked from 'package:lattice':
-## 
-##     panel.histogram
-```
-
-```r
+# Transform to ppp
 data.ppp &lt;- as.ppp(data.utm)
-marks(data.ppp)  &lt;- NULL
-
-Window(data.ppp) &lt;- as.owin(cz)
+# 'Unmark' the data, removing names
+marks(data.ppp)  &lt;- NULL 
+# setting working area to CZ
+Window(data.ppp) &lt;- as.owin(cz) 
 
 plot(data.ppp)
 ```
+]
 
-![](index_files/figure-html/unnamed-chunk-17-1.png)&lt;!-- --&gt;
+.pull-right[
+![](index_files/figure-html/unnamed-chunk-21-1.png)&lt;!-- --&gt;
+]
+---
+
+### Quadrat density
+
+Divide the area into squares and calculate the density by square.
+
+.pull-left[
+.tiny[
 
 ```r
-#data.ppp &lt;- rescale(data.ppp, 1000, "km")
+data.quad &lt;- quadratcount(data.ppp,  # Count per Square
+                        nx= 8, ny=4) # Divided into 8x4
 
-data.quadcount &lt;- quadratcount(data.ppp, nx= 8, ny=4)
-
-plot(data.quadcount)
+plot(data.quad)
 ```
 
-![](index_files/figure-html/unnamed-chunk-17-2.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-22-1.png)&lt;!-- --&gt;
+]
+]
+
+.pull-right[
+.tiny[
 
 ```r
-data.quaddens &lt;- intensity(data.quadcount)
-
-plot(intensity(data.quadcount, image = T))
+plot(
+  intensity(data.quad,    # Calculate count/area
+               image = T) # and return as map
+  )
 ```
 
-![](index_files/figure-html/unnamed-chunk-17-3.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-23-1.png)&lt;!-- --&gt;
+]
+]
 
 ---
 
 ### Kernel density
 
-With a cold density estimation we avoid the problems of unequal base sizes resulting from the square. We also avoid arbitrary borders within our investigation area.
+.pull-left[
+With a kernel density estimation we avoid the problems of unequal base sizes resulting from the square. We also avoid arbitrary borders within our investigation area.
 
 
 ```r
@@ -659,18 +572,23 @@ plot(data.kde)
 contour(data.kde, add=T)
 ```
 
-![](index_files/figure-html/unnamed-chunk-18-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-24-1.png)&lt;!-- --&gt;
+]
 
-Different colour sizes can influence the result of the interpolation.
+.pull-right[
+Different kernel sizes can influence the result of the interpolation.
 
 
 ```r
-data.kde2 &lt;- density(data.ppp, sigma = 10000)
+# kernel is 10 km
+data.kde2 &lt;- density(data.ppp,
+                     sigma = 10000)
 plot(data.kde2)
 contour(data.kde2, add=T)
 ```
 
-![](index_files/figure-html/unnamed-chunk-19-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-25-1.png)&lt;!-- --&gt;
+]
 
 ---
 class: inverse, bottom, right
@@ -683,11 +601,11 @@ class: inverse, bottom, right
 - reveals more of the mechanics of the process than its relationship to the general space and its features
 
 .pull-left[
-![](index_files/figure-html/unnamed-chunk-20-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-26-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
-![](index_files/figure-html/unnamed-chunk-21-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-27-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -724,16 +642,18 @@ class: inverse, bottom, right
 .caption[https://gistbok.ucgis.org/]
 ---
 
-## Distributions of Nearest Neighbor
+## Nearest Neighbor
 
-The distribution of the nearest neighbor differ for different spatial distributions!
+How far, for every point, is the next (first, but sometimes also second, third) nearest neighbouring point.
+
+The distribution of the Nearest Neighbours differ for different spatial distributions! Simulation:
 
 .pull-left[
-![](index_files/figure-html/unnamed-chunk-22-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-28-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
-![](index_files/figure-html/unnamed-chunk-23-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
 ]
 
 ---
@@ -745,21 +665,34 @@ Simulate and plot
 .tiny[
 
 ```r
-library(spatstat)
+# Making an study area of 10x10 units
+win &lt;- owin(c(0,10),c(0,10)) 
 
-win &lt;- owin(c(0,10),c(0,10))
+# Fixing the random number generator
 set.seed(12)
 
+# Random coordinates, centered
 x &lt;- rnorm(20, 5,1)
-set.seed(14)
-
 y &lt;- rnorm(20,5,1)
+
+# our clustered ppp
 P.cl &lt;- ppp(x,y,window=win)
 
+# Regular ppp using an inhibition process (repulsive)
 P.reg &lt;- rSSI(2, 20, win = win)
 
+# A CSR ppp
 P.rnd &lt;- rpoint(20, win=win)
+```
+]]
 
+.pull-right[
+Plot
+
+.tiny[
+
+```r
+# Define plots side by side and plot
 OP &lt;- par(mfrow=c(1,3), mar=c(1,1,1,0))
  plot(P.reg, pch=20, cols=rgb(0,0,0,.5),
       main = "Regular Pattern")
@@ -769,14 +702,13 @@ OP &lt;- par(mfrow=c(1,3), mar=c(1,1,1,0))
         "Random Pattern")
 par(OP)
 ```
-]]
-
-.pull-right[
+]
 Histogram
 
 .tiny[
 
 ```r
+# Define plots side by side and make histograms
 OP &lt;- par(mfrow=c(1,3), mar=c(1,1,1,0))
 hist(nndist(P.reg), xlim=c(0,4), ylim=c(0,20),
      main = "Regular Pattern")
@@ -794,16 +726,18 @@ par(OP)
 
 .pull-left[
 **Average Nearest Neighbor (ANN)** measures the average distance of neighboring data points from a given observation. If it is compared with a theoretical random average distance, it tells much about whether data points are clustered or dispersed.
-
-`$$NearestNeighbor Dist ance = d(NN) = \frac{\sum^n_{i=1} min(d_{ij})}{N}$$`
-`$$Theoretical Random Distance = d(ran) = 0.5*\sqrt\frac{A}{N}$$`
-`\(Nearest Neighbor Index = NNI = \frac{d(NN)}{d(ran)}\)`
 ]
 
 .pull-right[
 ![](images/1_ANfLax8UZKlHqyCWK3uR1A.png)
 .caption[Average distance of nearest neighbors are shorter in the left. Source: https://towardsdatascience.com]
 ]
+
+
+
+`\(NearestNeighbor Dist ance = d(NN) = \frac{\sum^n_{i=1} min(d_{ij})}{N}\)`
+`\(Theoretical Random Distance = d(ran) = 0.5*\sqrt\frac{A}{N}\)`
+`\(Nearest Neighbor Index = NNI = \frac{d(NN)}{d(ran)}\)`
 
 ---
 
@@ -828,7 +762,7 @@ par(OP)
 A simple measurement for the average value of the nearest neighbour of a point pattern 
 
 .pull-left[
-![](index_files/figure-html/unnamed-chunk-26-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
 ]
 
 .pull-right[
@@ -878,7 +812,7 @@ data.ann
 ```
 
 ```
-## [1] 9202.946
+## [1] 10613.68
 ```
 
 ```r
@@ -890,7 +824,7 @@ data.ann/ann.ran
 ```
 
 ```
-## [1] 0.6012999
+## [1] 0.6725187
 ```
 ]
 
@@ -935,243 +869,268 @@ The **K-Function** (or **Ripley`s K**) measures distances between all points in 
 
 ### K Function in R
 
+.pull-left[
 
 ```r
 K &lt;- Kest(data.ppp)
-plot(K, main=NULL, las=1, legendargs=list(cex=0.8, xpd=TRUE, inset=c(1.01, 0) ))
+plot(K)
 ```
 
-```
-## Warning in min(D[scaledlegbox]): kein nicht-fehlendes Argument für min; gebe Inf
-## zurück
-```
+![](index_files/figure-html/unnamed-chunk-36-1.png)&lt;!-- --&gt;
+]
+.pull-right[
+Ripley`s K with different corrections for edge effects:
 
-![](index_files/figure-html/unnamed-chunk-29-1.png)&lt;!-- --&gt;
+* black: isotropic correction, to be used for regular windows
+* red: translation correction, to be used for arbitratry masks (like in our case)
+* blue: 'border method' correction, fast, but inaccurated. Best to be ignored
 
+additionally:
+
+* blue: the theoretical random distribution
+
+**Interpretation**: If the red line is above the blue line, the points are clustered, if it is below, they are dispersed (regular distributed)
+]
 ---
 
 ### K Funktion with Envelope
-
+.pull-left[
 
 ```r
 plot(envelope(data.ppp, Kest))
 ```
+![](index_files/figure-html/unnamed-chunk-38-1.png)&lt;!-- --&gt;
+]
 
-```
-## Generating 99 simulations of CSR  ...
-## 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-## 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
-## 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98,  99.
-## 
-## Done.
-```
+.pull-right[
+**When does random become clustered?**
 
-![](index_files/figure-html/unnamed-chunk-30-1.png)&lt;!-- --&gt;
+Approach: try out different random pattern, and mark there extremes. We produce an *Envelope* by default of 2 standard deviations (96% of the cases in normal distributed cases).
+* If the actual data are below: than dispersed
+* If the actual data are above: than clustered
 
+**-&gt; Monte Carlo Approach**
+
+*Benefits*:
+* we see a range instead of a point estimate of random processes
+* it comes with battery included: correction for edge effects takes place automatically
+
+*Drawbacks*:
+* the 'confidence intervals' are random, will change with every run
+* accuracy depends on number of simulations
+]
 ---
 
 ## inhomogenous point processes
 
+.pull-left[
+The ordinary K function is only defined for 
+
+* **homogeneous point patterns (resulting from stationary point pattern):** The basic density of the points is the same over the whole investigation area
+
+-&gt; This assumption is in real world hard to maintain
+
+* **inhomogeneous point patterns (resulting from non-stationary point pattern):** The density differs over the study area according some spatial trends
+
+]
+
+.pull-right[
+![](images/AnIntroductiontoStationaryandNon-StationaryProcesses1_4-babcf20c2229411f8da42e24e7aaa18f.png)
+.caption[Image by Julie Bang © Investopedia 2020.]
+]
 ---
-## inhomogenous point processes in R
-
-
-```r
-K_in &lt;- Kinhom(data.ppp)
-
-plot(K_in, main = "K function for inhomogenuous point processes")
-```
-
-![](index_files/figure-html/unnamed-chunk-31-1.png)&lt;!-- --&gt;
-
----
-## inhomogenous point processes in R with envelope
+## Trend in the real world data
 
 .pull-left[
 
+In our data there is an obvious trend: Dense in the northwest and the southeast.
+
+
 ```r
 lambda &lt;- density.ppp(data.ppp)
-plot(lambda)
+plot(lambda, main="", ribbon = NA)
 plot(data.ppp, add=T)
 ```
 
-![](index_files/figure-html/unnamed-chunk-32-1.png)&lt;!-- --&gt;
+Plotting distances against coordinates.
+
+
+```r
+plot(data.ppp$x,nndist(data.ppp))
+```
+
+This likely results from other factors than the point process: **Covariates**.
+
+That is why the homogenuous assumption is not met!
+
+]
+
+.pull-right[
+&lt;img src="index_files/figure-html/unnamed-chunk-41-1.png" width="75%" /&gt;
+
+&lt;img src="index_files/figure-html/unnamed-chunk-42-1.png" width="85%" /&gt;
+]
+---
+## inhomogenous point processes in R
+
+.pull-left[
+Introducing Kinhom, the Inhomogeneous K-function.
+
+* Estimates the inhomogeneous K function of a non-stationary point pattern
+* Needs lambda: An estimation how likely it is for points to occure in different areas
+* If omitted, it will be estimated from the data
 ]
 
 .pull-right[
 
 ```r
-Ken &lt;- envelope(data.ppp, 'Kinhom',
-                  simulate=expression(rpoispp(lambda)),
-                  correction="trans")
+K_in &lt;- Kinhom(data.ppp,
+               lambda = lambda) 
+
+plot(K_in)
 ```
 
-```
-## Generating 99 simulations by evaluating expression  ...
-## 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-## 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
-## 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98,  99.
-## 
-## Done.
-```
+![](index_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
+]
+
+---
+## inhomogenous point processes in R with envelope
+
+.pull-left[
+Also, for Kinhom an envelope is possible.
+
+* explicite parameterisation of the simulation function necessary
+  * a Poisson Point Pattern
+  * based on the intensity lambda (our density map)
+* explicit parameterisation of the K function
+
+-&gt; Exept for the repetition, we already defined our own Monte Carlo procedure. Kind of...
+]
+
+.pull-right[
+.tiny[
 
 ```r
+Ken &lt;- envelope(data.ppp, 'Kinhom',
+                simulate=expression(
+                  rpoispp(lambda))
+                )
 plot(Ken)
 ```
 
-![](index_files/figure-html/unnamed-chunk-33-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-45-1.png)&lt;!-- --&gt;
 ]
+]
+
 ---
 class: inverse, bottom, right
 # Covariates
 ---
 ## Covariates
 
----
-### Elevation as Covariate
 .pull-left[
+* an or multiple additional effects that influence the dependent variable other than the independent that we control for
+* here might be elevation:
+  * higher mountain ranges do probably have lesser population
+  * also less archaeological investigation
+  * We probably like to control for that 
+]
+
+.pull-right[
+![](index_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;![](index_files/figure-html/unnamed-chunk-46-2.png)&lt;!-- --&gt;
+.caption[above: Altitude of CZ. below: density of 14C dated sites]
+]
+
+---
+
+### Elevation as Covariate
+
+.pull-left[
+Lets get the altitude data.
+
+* raster data, we might like to use the raster package
+* reprojection, since it comes as wgs84 lat/lng
+* converting to `im` format, so that spatstat can understand it
+]
+
+.pull-right[
+.tiny[
 
 ```r
 library(raster)
-```
-
-```
-## 
-## Attaching package: 'raster'
-```
-
-```
-## The following objects are masked from 'package:spatstat':
-## 
-##     area, rotate, shift
-```
-
-```
-## The following object is masked from 'package:nlme':
-## 
-##     getData
-```
-
-```
-## The following objects are masked from 'package:Hmisc':
-## 
-##     mask, zoom
-```
-
-```
-## The following object is masked from 'package:splancs':
-## 
-##     zoom
-```
-
-```r
 library(maptools)
-```
 
-```
-## Checking rgeos availability: TRUE
-```
-
-```
-## 
-## Attaching package: 'maptools'
-```
-
-```
-## The following object is masked from 'package:Hmisc':
-## 
-##     label
-```
-
-```r
+# Get Altitude Data (part of the raster package)
 elev &lt;- raster::getData(name="alt", country = "CZ")
-```
 
-```
-## Warning in showSRID(uprojargs, format = "PROJ", multiline = "NO", prefer_proj
-## = prefer_proj): Discarded datum Unknown based on WGS84 ellipsoid in Proj4
-## definition
-```
-
-```r
+# project to UTM
 elev.utm &lt;- projectRaster(elev, crs=32633)
 
+# convert to im format
 elev.im &lt;- as.im.RasterLayer(elev.utm)
 
 plot(elev.im)
 ```
+![](index_files/figure-html/unnamed-chunk-48-1.png)&lt;!-- --&gt;
+]
+]
 
-![](index_files/figure-html/unnamed-chunk-34-1.png)&lt;!-- --&gt;
+---
+## Nonparametric Estimate of Intensity as Function of a Covariate 
+
+.pull-left[
+We assume:
+  * elevation and density (intensity) are correlated
+   * we estimate and visualize the relationship using the function rhohat
+  
+The plot shows:
+* lower altitudes have higher chances for dated sites
+* above 400 m no significant effect change is visible
+
+Only applicable for continuous values
 ]
 
 .pull-right[
+.tiny[
 
 ```r
-rho &lt;- rhohat(data.ppp, elev.im,  method="ratio")
+rho &lt;- rhohat(data.ppp, elev.im,
+              method="ratio")
 
 plot(rho)
 ```
 
-![](index_files/figure-html/unnamed-chunk-35-1.png)&lt;!-- --&gt;
-]
+![](index_files/figure-html/unnamed-chunk-49-1.png)&lt;!-- --&gt;
+]]
 
 ---
 
-### Compare prediction with ground truth
+### Prediction from the 'model'
+
+The relationship we identified represents a model.
+
+Models can also be used generative: We can explore how the density would look like if our model (density depends on elevation) would be true
 
 .pull-left[
+.tiny[
 
 ```r
 pred &lt;- predict(rho)
-cl   &lt;- interp.colours(c("lightyellow", "orange" ,"red"), 100) # Create color scheme
-plot(pred, col=cl, las=1, main=NULL, gamma = 0.25)
+plot(pred, gamma = 0.25)
 ```
 
-![](index_files/figure-html/unnamed-chunk-36-1.png)&lt;!-- --&gt;
-
-```r
-plot(data.kde, col=cl, las=1, main=NULL, gamma = 0.25)
-```
-
-![](index_files/figure-html/unnamed-chunk-36-2.png)&lt;!-- --&gt;
-]
+![](index_files/figure-html/unnamed-chunk-50-1.png)&lt;!-- --&gt;
+]]
 
 .pull-right[
+.tiny[
 
 ```r
-plot(data.kde, col=cl, las=1, main=NULL, gamma = 0.25)
+plot(data.kde, gamma = 0.25)
 ```
 
-![](index_files/figure-html/unnamed-chunk-37-1.png)&lt;!-- --&gt;
-]
-
----
-### Modelling the relationship
-
-
-```r
-# Create the Poisson point process model
-PPM1 &lt;- ppm(data.ppp ~ elev.im)
-```
-
-```
-## Warning: Values of the covariate 'elev.im' were NA or undefined at 0.66% (5
-## out of 759) of the quadrature points. Occurred while executing: ppm.ppp(Q =
-## data.ppp, trend = ~elev.im, data = NULL, interaction = NULL)
-```
-
-```r
-# Plot the relationship
-plot(effectfun(PPM1, "elev.im", se.fit=TRUE), main=NULL,
-     las=1, legendargs=list(cex=0.8, xpd=TRUE, inset=c(1.01, 0) ))
-```
-
-```
-## Warning in min(D[scaledlegbox]): kein nicht-fehlendes Argument für min; gebe Inf
-## zurück
-```
-
-![](index_files/figure-html/unnamed-chunk-38-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-51-1.png)&lt;!-- --&gt;
+]]
 
 ---
 class: inverse, bottom, right
@@ -1179,7 +1138,7 @@ class: inverse, bottom, right
 
 ---
 
-## Exploring the random range
+## Creating our own Monte Carlo procedure
 
 Remember:
 
@@ -1190,8 +1149,16 @@ ann.p
 ```
 
 ```
-## [1] 9202.946
+## [1] 10613.68
 ```
+
+If we want to simulate, we need:
+
+* multiple instances of the process
+* a process itself
+* A loop to combine them
+
+Lets simulate a random homogeneous point process:
 
 
 ```r
@@ -1199,93 +1166,106 @@ n     &lt;- 100               # Number of simulations
 ann.r &lt;- vector(length = n) # Create an empty object to be used to store simulated ANN values
 for (i in 1:n){
   rand.p   &lt;- rpoint(n=data.ppp$n, win=cz)  # Generate random point locations
-  ann.r[i] &lt;- mean(nndist(rand.p, k=1))  # Tally the ANN values
+  ann.r[i] &lt;- mean(nndist(rand.p, k=1))  # Collect the ANN values
 }
 ```
 
 ---
-### homogeneous
+### Results
 .pull-left[
+This is how one (the last) of the simulation results would look like:
+
 
 ```r
-plot(rand.p, pch=16, main=NULL, cols=rgb(0,0,0,0.5))
+plot(rand.p)
 ```
 
-![](index_files/figure-html/unnamed-chunk-41-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-54-1.png)&lt;!-- --&gt;
+
 ]
 
 .pull-right[
+We also can summarize using plots:
+.tiny[
 
 ```r
-hist(ann.r, main=NULL, las=1, breaks=40, col="bisque", xlim=range(ann.p, ann.r))
+hist(ann.r, xlim=range(ann.p, ann.r))
 abline(v=ann.p, col="blue")
 ```
 
-![](index_files/figure-html/unnamed-chunk-42-1.png)&lt;!-- --&gt;
-]
+![](index_files/figure-html/unnamed-chunk-55-1.png)&lt;!-- --&gt;
+Our actual ANN (blue line) is much smaller than the simulated distribution: Clustered.
+]]
 ---
 
 ### based on elevation
 
 .pull-left[
+Now lets use the elevation as determining factor in the point process:
+
 
 ```r
 plot(elev.im)
 ```
 
-![](index_files/figure-html/unnamed-chunk-43-1.png)&lt;!-- --&gt;
-
+![](index_files/figure-html/unnamed-chunk-56-1.png)&lt;!-- --&gt;
 ]
+
 .pull-right[
-Invert the Elevation
+Because higher elevation means lesser probability, we have to invert the values. Also, we can rescale them to be between 0 and 1.
+
+.tiny[
 
 ```r
-elev.rescale &lt;- 1- (elev.im- min(elev.im)) /(max(elev.im)-min(elev.im))
+elev.rescale &lt;- 1 - # invert
+  (elev.im- min(elev.im)) /  # rescale between 0 and 1
+  (max(elev.im)-min(elev.im))
 
 plot(elev.rescale)
 ```
 
-![](index_files/figure-html/unnamed-chunk-44-1.png)&lt;!-- --&gt;
-]
+![](index_files/figure-html/unnamed-chunk-57-1.png)&lt;!-- --&gt;
+]]
 
 ---
 ### Modeling based on Elevation
 
+.pull-left[
+Now we can use the same structure, but this time we provide f: the rescaled inverted elevation, as function for point probability:
+
+.tiny[
 
 ```r
-n     &lt;- 100
-ann.r &lt;- vector(length=n)
 for (i in 1:n){
   rand.p   &lt;- rpoint(n=data.ppp$n, f=elev.rescale)
   ann.r[i] &lt;- mean(nndist(rand.p, k=1))
 }
 ```
-
-.pull-left[
-
-```r
-Window(rand.p) &lt;- as.owin(cz)  # Replace raster mask with ma.km window
-plot(rand.p, pch=16, main=NULL, cols=rgb(0,0,0,0.5))
-```
-
-![](index_files/figure-html/unnamed-chunk-46-1.png)&lt;!-- --&gt;
-]
+]]
 
 .pull-right[
+Histogram
 
 ```r
-hist(ann.r, main=NULL, las=1, breaks=40, col="bisque", xlim=range(ann.p, ann.r))
+hist(ann.r, xlim=range(ann.p, ann.r))
 abline(v=ann.p, col="blue")
 ```
 
-![](index_files/figure-html/unnamed-chunk-47-1.png)&lt;!-- --&gt;
+![](index_files/figure-html/unnamed-chunk-59-1.png)&lt;!-- --&gt;
+Also with this, the data remain clustered.
 ]
 
 ---
-### hypothese test
+### Comparing  models
+
+R has a conceptual framework with which models can be created and used for predictions, but also for comparison. This is always done in a standardised way. We first create a model in which we make the point density dependent on the height:
+
 .pull-left[
+.tiny[
 
 ```r
+# Create the Poisson point process model
+PPM1 &lt;- ppm(data.ppp ~ elev.im)
 PPM1
 ```
 
@@ -1296,21 +1276,39 @@ PPM1
 ## 
 ## Fitted trend coefficients:
 ##   (Intercept)       elev.im 
-## -17.761354692  -0.008099993 
+## -17.815984604  -0.008123835 
 ## 
 ##                  Estimate        S.E.      CI95.lo       CI95.hi Ztest
-## (Intercept) -17.761354692 0.312700862 -18.37423712 -17.148472263   ***
-## elev.im      -0.008099993 0.001010436  -0.01008041  -0.006119574   ***
+## (Intercept) -17.815984604 0.322540945 -18.44815324 -17.183815968   ***
+## elev.im      -0.008123835 0.001043406  -0.01016887  -0.006078797   ***
 ##                   Zval
-## (Intercept) -56.799826
-## elev.im      -8.016332
+## (Intercept) -55.236350
+## elev.im      -7.785881
 ## Problem:
-##  Values of the covariate 'elev.im' were NA or undefined at 0.66% (5 out of 759) 
+##  Values of the covariate 'elev.im' were NA or undefined at 0.66% (5 out of 754) 
 ## of the quadrature points
 ```
-]
+]]
 
 .pull-right[
+.tiny[
+
+```r
+# Plot the relationship
+plot(effectfun(PPM1, "elev.im",
+               se.fit=TRUE))
+```
+
+![](index_files/figure-html/unnamed-chunk-61-1.png)&lt;!-- --&gt;
+]]
+
+---
+### Null model
+
+We compare our model: 'elevation is a predictor for density' against the basic model (or null model) where we make the density not dependent on anything:
+
+.pull-left[
+.tiny[
 
 ```r
 PPM0 &lt;- ppm(data.ppp ~ 1)
@@ -1319,12 +1317,32 @@ PPM0
 
 ```
 ## Stationary Poisson process
-## Intensity: 1.067256e-09
+## Intensity: 1.003729e-09
 ##              Estimate      S.E.   CI95.lo   CI95.hi Ztest      Zval
-## log(lambda) -20.65818 0.1091089 -20.87202 -20.44433   *** -189.3353
+## log(lambda) -20.71954 0.1125088 -20.94006 -20.49903   *** -184.1593
 ```
-]
+]]
 
+.pull-right[
+.tiny[
+
+```r
+# Plot the relationship
+plot(effectfun(PPM0, "elev.im",
+               se.fit=TRUE))
+```
+
+![](index_files/figure-html/unnamed-chunk-63-1.png)&lt;!-- --&gt;
+]]
+
+---
+### Actual comparison
+
+Often, anova is used to compare models. The `anova()` function will take the model objects as arguments, and return an ANOVA testing whether the more complex model is significantly better at capturing the data than the simpler model.
+
+With our models, this results like this:
+
+.tiny[
 
 ```r
 anova(PPM0, PPM1, test="LRT")
@@ -1332,7 +1350,7 @@ anova(PPM0, PPM1, test="LRT")
 
 ```
 ## Warning: Values of the covariate 'elev.im' were NA or undefined at 0.66% (5
-## out of 759) of the quadrature points. Occurred while executing: ppm.ppp(Q =
+## out of 754) of the quadrature points. Occurred while executing: ppm.ppp(Q =
 ## data.ppp, trend = ~elev.im, data = NULL, interaction = NULL,
 ```
 
@@ -1348,11 +1366,13 @@ anova(PPM0, PPM1, test="LRT")
 ## Model 2: ~elev.im 	 Poisson
 ##   Npar Df Deviance  Pr(&gt;Chi)    
 ## 1    6                          
-## 2    7  1   91.731 &lt; 2.2e-16 ***
+## 2    7  1   86.646 &lt; 2.2e-16 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
+]
 
+There is a significant increase in prediction accuracy compared to the null model!
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="libs/remark-latest.min.js"></script>
