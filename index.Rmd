@@ -385,6 +385,8 @@ class: inverse, bottom, right
 
 The Density of a pattern in relationship to the overall area.
 
+[download shapefile](cz_circum.zip)
+
 $$
 \widehat{\lambda} = \frac{n}{a}
 \label{eq:global-density}
